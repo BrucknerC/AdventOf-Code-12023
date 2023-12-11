@@ -23,6 +23,35 @@ pub fn get_numbers_adjacent_to_symbols(input: &str) -> Vec<u32> {
         .collect_vec()
 }
 
+pub fn get_gear_ratios(input: &str) -> Vec<u32> {
+    let lines = input
+        .lines()
+        .map(str::chars)
+        .map(Itertools::collect_vec)
+        .collect_vec();
+    let schematic = Array2D::from_rows(&lines).unwrap();
+
+    get_indices_of_symbols_with_predicate(&schematic, |c| c == '*')
+        .iter()
+        .map(|&address| get_neighbouring_digits(&schematic, address))
+        .map(|digits| {
+            digits
+                .iter()
+                .map(|&address| get_start_index_of_number(&schematic, address))
+                .collect_vec()
+        })
+        .map(|numbers| HashSet::from_iter(numbers.iter().cloned()))
+        .filter(|numbers| numbers.len() == 2)
+        .map(|numbers: HashSet<(usize, usize)>| {
+            numbers
+                .iter()
+                .map(|&address| get_number_at(&schematic, address))
+                .reduce(|acc, e| acc * e)
+                .unwrap()
+        })
+        .collect_vec()
+}
+
 fn get_number_at(schematic: &Array2D<char>, (row_index, col_index): (usize, usize)) -> u32 {
     let mut col = col_index;
     let mut number_as_string = "".to_owned();
@@ -38,10 +67,20 @@ fn get_number_at(schematic: &Array2D<char>, (row_index, col_index): (usize, usiz
 }
 
 fn get_indices_of_symbols(schematic: &Array2D<char>) -> Vec<(usize, usize)> {
+    get_indices_of_symbols_with_predicate(schematic, |c| !c.is_ascii_digit() && c != '.')
+}
+
+fn get_indices_of_symbols_with_predicate<F>(
+    schematic: &Array2D<char>,
+    predicate: F,
+) -> Vec<(usize, usize)>
+where
+    F: Fn(char) -> bool,
+{
     let mut symbol_indices = vec![];
     for (row_index, row) in schematic.rows_iter().enumerate() {
         for (col_index, &element) in row.enumerate() {
-            if !element.is_ascii_digit() && element != '.' {
+            if predicate(element) {
                 symbol_indices.push((row_index, col_index));
             }
         }
@@ -114,6 +153,30 @@ mod tests {
         println!(
             "The sum of all part numbers is {}",
             get_numbers_adjacent_to_symbols(input).iter().sum::<u32>()
+        );
+    }
+
+    #[test]
+    fn part_2_example() {
+        let input = "467..114..
+...*......
+..35..633.
+......#...
+617*......
+.....+.58.
+..592.....
+......755.
+...$.*....
+.664.598..";
+        assert_eq!(467835, get_gear_ratios(input).iter().sum::<u32>())
+    }
+
+    #[test]
+    fn part_2() {
+        let input = include_str!("input.txt");
+        println!(
+            "The sum of all gear ratios is {}",
+            get_gear_ratios(input).iter().sum::<u32>()
         );
     }
 }
