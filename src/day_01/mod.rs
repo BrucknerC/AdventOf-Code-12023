@@ -1,10 +1,8 @@
-#[allow(dead_code)]
-
 const STRINGIFIED_NUMBERS: [&str; 9] = [
     "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
 ];
 
-fn retrieve_calibration_value_part1(input: &str) -> u32 {
+pub fn retrieve_calibration_value_part1(input: &str) -> u32 {
     input
         .lines()
         .map(parse_line_part1)
@@ -30,7 +28,7 @@ fn parse_line_part1(line: &str) -> (u32, u32) {
     (ten, one)
 }
 
-fn retrieve_calibration_value_part2(input: &str) -> u32 {
+pub fn retrieve_calibration_value_part2(input: &str) -> u32 {
     input
         .lines()
         .map(parse_line_part2)

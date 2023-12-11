@@ -1,8 +1,10 @@
 use itertools::Itertools;
 
-#[allow(dead_code)]
-
-const RGB_DICE_COUNTS: (u32, u32, u32) = (12, 13, 14);
+pub const RGB_DICE_COUNTS: DiceCombination = DiceCombination {
+    red: 12,
+    green: 13,
+    blue: 14,
+};
 
 struct Game {
     id: u32,
@@ -31,7 +33,7 @@ impl Game {
     }
 }
 
-struct DiceCombination {
+pub struct DiceCombination {
     red: u32,
     green: u32,
     blue: u32,
@@ -47,7 +49,7 @@ impl DiceCombination {
     }
 }
 
-fn get_ids_of_possible_games(input: &str, dice_in_bag: DiceCombination) -> Vec<u32> {
+pub fn get_ids_of_possible_games(input: &str, dice_in_bag: DiceCombination) -> Vec<u32> {
     input
         .lines()
         .map(parse_line)
@@ -56,7 +58,7 @@ fn get_ids_of_possible_games(input: &str, dice_in_bag: DiceCombination) -> Vec<u
         .collect_vec()
 }
 
-fn get_power_of_minimum_cube_sets_per_game(input: &str) -> Vec<u32> {
+pub fn get_power_of_minimum_dice_sets_per_game(input: &str) -> Vec<u32> {
     input
         .lines()
         .map(parse_line)
@@ -127,16 +129,9 @@ Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red
 Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green";
         assert_eq!(
             8,
-            get_ids_of_possible_games(
-                input,
-                DiceCombination {
-                    red: 12,
-                    green: 13,
-                    blue: 14
-                }
-            )
-            .iter()
-            .sum::<u32>()
+            get_ids_of_possible_games(input, RGB_DICE_COUNTS)
+                .iter()
+                .sum::<u32>()
         );
     }
 
@@ -145,16 +140,9 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green";
         let input = include_str!("input.txt");
         println!(
             "The sum of all game IDs is {}",
-            get_ids_of_possible_games(
-                input,
-                DiceCombination {
-                    red: 12,
-                    green: 13,
-                    blue: 14
-                }
-            )
-            .iter()
-            .sum::<u32>()
+            get_ids_of_possible_games(input, RGB_DICE_COUNTS)
+                .iter()
+                .sum::<u32>()
         );
     }
 
@@ -167,7 +155,7 @@ Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red
 Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green";
         assert_eq!(
             2286,
-            get_power_of_minimum_cube_sets_per_game(input)
+            get_power_of_minimum_dice_sets_per_game(input)
                 .iter()
                 .sum::<u32>()
         );
@@ -178,7 +166,7 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green";
         let input = include_str!("input.txt");
         println!(
             "The sum of powers of minimal sets of all games is {}",
-            get_power_of_minimum_cube_sets_per_game(input)
+            get_power_of_minimum_dice_sets_per_game(input)
                 .iter()
                 .sum::<u32>()
         );
