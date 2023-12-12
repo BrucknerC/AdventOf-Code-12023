@@ -1,12 +1,10 @@
 use itertools::Itertools;
-use std::collections::{HashMap, VecDeque};
+use std::{collections::HashMap, hash::Hash};
 
-#[derive(Clone, PartialEq, Eq, Debug, PartialOrd, Ord)]
+#[derive(Eq)]
 struct Card {
     id: u32,
     win_count: u32,
-    winning_numbers: Vec<u32>,
-    scratched_numbers: Vec<u32>,
 }
 
 impl Card {
@@ -17,13 +15,23 @@ impl Card {
                 .iter()
                 .filter(|&scratched_number| winning_numbers.contains(scratched_number))
                 .count() as u32,
-            winning_numbers,
-            scratched_numbers,
         }
     }
 
     fn get_score(self) -> u32 {
         2u32.pow(self.win_count) / 2
+    }
+}
+
+impl Hash for Card {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
+}
+
+impl PartialEq for Card {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
     }
 }
 
@@ -37,32 +45,24 @@ pub fn get_points_from_cards(input: &str) -> Vec<u32> {
 
 pub fn count_copies_of_cards(input: &str) -> u32 {
     let cards = input.lines().map(parse_line).collect_vec();
-    let mut cards_to_be_processed: VecDeque<&Card> = VecDeque::new();
-    let mut copies_per_card: HashMap<u32, u32> = HashMap::new();
+    let mut copies_per_card: HashMap<&Card, u32> = HashMap::new();
 
     for card in cards.iter() {
-        cards_to_be_processed.push_back(card);
-        copies_per_card.insert(card.id, 1);
+        copies_per_card.insert(card, 1);
     }
 
-    while let Some(card) = cards_to_be_processed.pop_front() {
-        for card_won in get_copies_of_cards(&cards, card) {
-            *copies_per_card.entry(card_won.id).or_insert(0) += 1;
-            cards_to_be_processed.push_back(card_won);
+    for card in cards.iter() {
+        for card_to_update in cards
+            .iter()
+            .skip(card.id as usize)
+            .take(card.win_count as usize)
+        {
+            *copies_per_card.entry(card_to_update).or_insert(1) +=
+                *copies_per_card.entry(card).or_default();
         }
     }
 
     copies_per_card.values().sum::<u32>()
-}
-
-fn get_copies_of_cards<'a>(cards: &'a [Card], card: &'a Card) -> Vec<&'a Card> {
-    let card_index = cards.iter().position(|it| it.id == card.id).unwrap();
-
-    cards
-        .iter()
-        .skip(card_index + 1)
-        .take(card.win_count as usize)
-        .collect_vec()
 }
 
 fn parse_line(line: &str) -> Card {
