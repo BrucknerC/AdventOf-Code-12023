@@ -1,32 +1,29 @@
 use itertools::Itertools;
-use std::{
-    collections::{HashMap, VecDeque},
-    hash::Hash,
-};
+use std::collections::{HashMap, VecDeque};
 
 #[derive(Clone, PartialEq, Eq, Debug, PartialOrd, Ord)]
 struct Card {
     id: u32,
+    win_count: u32,
     winning_numbers: Vec<u32>,
     scratched_numbers: Vec<u32>,
 }
 
 impl Card {
+    fn new(id: u32, winning_numbers: Vec<u32>, scratched_numbers: Vec<u32>) -> Self {
+        Card {
+            id,
+            win_count: scratched_numbers
+                .iter()
+                .filter(|&scratched_number| winning_numbers.contains(scratched_number))
+                .count() as u32,
+            winning_numbers,
+            scratched_numbers,
+        }
+    }
+
     fn get_score(self) -> u32 {
-        2u32.pow(self.count_wins() as u32) / 2
-    }
-
-    fn count_wins(&self) -> usize {
-        self.scratched_numbers
-            .iter()
-            .filter(|&scratched_number| self.winning_numbers.contains(scratched_number))
-            .count()
-    }
-}
-
-impl Hash for Card {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.id.hash(state);
+        2u32.pow(self.win_count) / 2
     }
 }
 
@@ -64,7 +61,7 @@ fn get_copies_of_cards<'a>(cards: &'a [Card], card: &'a Card) -> Vec<&'a Card> {
     cards
         .iter()
         .skip(card_index + 1)
-        .take(card.count_wins())
+        .take(card.win_count as usize)
         .collect_vec()
 }
 
@@ -79,11 +76,7 @@ fn parse_line(line: &str) -> Card {
 
     let (winning_numbers, scratched_numbers) = parse_numbers(split_by_colon.1);
 
-    Card {
-        id: game_id.parse().unwrap(),
-        winning_numbers,
-        scratched_numbers,
-    }
+    Card::new(game_id.parse().unwrap(), winning_numbers, scratched_numbers)
 }
 
 fn parse_numbers(line: &str) -> (Vec<u32>, Vec<u32>) {
