@@ -1,12 +1,12 @@
 use itertools::Itertools;
 
 struct Race {
-    time: u32,
-    distance_to_beat: u32,
+    time: u64,
+    distance_to_beat: u64,
 }
 
-impl From<(u32, u32)> for Race {
-    fn from(value: (u32, u32)) -> Self {
+impl From<(u64, u64)> for Race {
+    fn from(value: (u64, u64)) -> Self {
         Race {
             time: value.0,
             distance_to_beat: (value.1),
@@ -29,26 +29,49 @@ impl Race {
     }
 }
 
-pub fn get_number_of_ways_to_win(input: &str) -> Vec<usize> {
-    parse_races(input)
+pub fn get_number_of_ways_to_win_part1(input: &str) -> Vec<usize> {
+    parse_races_part1(input)
         .iter()
         .map(Race::get_number_of_ways_to_win)
         .collect_vec()
 }
 
-fn parse_races(input: &str) -> Vec<Race> {
+fn parse_races_part1(input: &str) -> Vec<Race> {
     let lines: (&str, &str) = input.lines().collect_tuple().unwrap();
     let times = lines
         .0
         .split_whitespace()
         .skip(1)
-        .map(|s| s.parse::<u32>().unwrap());
+        .map(|s| s.parse::<u64>().unwrap());
     let distances_to_beat = lines
         .1
         .split_whitespace()
         .skip(1)
-        .map(|s| s.parse::<u32>().unwrap());
+        .map(|s| s.parse::<u64>().unwrap());
     times.zip(distances_to_beat).map(Race::from).collect_vec()
+}
+
+pub fn get_number_of_ways_to_win_part2(input: &str) -> usize {
+    parse_races_part2(input).get_number_of_ways_to_win()
+}
+
+fn parse_races_part2(input: &str) -> Race {
+    let lines: (&str, &str) = input.lines().collect_tuple().unwrap();
+    let time = lines
+        .0
+        .split_whitespace()
+        .skip(1)
+        .collect::<String>()
+        .parse::<u64>()
+        .unwrap();
+    let distance_to_beat = lines
+        .1
+        .split_whitespace()
+        .skip(1)
+        .collect::<String>()
+        .parse::<u64>()
+        .unwrap();
+    Race::from((time, distance_to_beat))
 }
 
 #[cfg(test)]
@@ -61,7 +84,9 @@ mod tests {
 Distance:  9  40  200";
         assert_eq!(
             288,
-            get_number_of_ways_to_win(input).iter().product::<usize>()
+            get_number_of_ways_to_win_part1(input)
+                .iter()
+                .product::<usize>()
         );
     }
 
@@ -71,24 +96,26 @@ Distance:  9  40  200";
 Distance:   207   1394   1209   1014";
         println!(
             "The product of ways to win is {}",
-            get_number_of_ways_to_win(input).iter().product::<usize>()
+            get_number_of_ways_to_win_part1(input)
+                .iter()
+                .product::<usize>()
         );
     }
 
-    /* #[test]
-                fn part_2_example() {
-                    let input = "Time:      7  15   30
+    #[test]
+    fn part_2_example() {
+        let input = "Time:      7  15   30
     Distance:  9  40  200";
-                    assert_eq!(30, count_copies_of_cards(input))
-                } */
+        assert_eq!(71503, get_number_of_ways_to_win_part2(input))
+    }
 
-    /*     #[test]
-        fn part_2() {
-            let input = "Time:        47     84     74     67
+    #[test]
+    fn part_2() {
+        let input = "Time:        47     84     74     67
     Distance:   207   1394   1209   1014";
-            println!(
-                "The sum of all scratch cards is {}",
-                count_copies_of_cards(input)
-            );
-        } */
+        println!(
+            "The number of ways to win is {}",
+            get_number_of_ways_to_win_part2(input)
+        );
+    }
 }
